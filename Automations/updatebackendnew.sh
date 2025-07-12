@@ -1,22 +1,20 @@
 #!/bin/bash
 
-# Set the Instance ID and path to the .env file
-INSTANCE_ID="i-030da7d31a1dbbffc"
-
-# Retrieve the public IP address of the specified EC2 instance
-ipv4_address=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
+# The fixed address for the local frontend
+LOCAL_FRONTEND_URL="FRONTEND_URL=\"http://localhost:5173\""
 
 # Path to the .env file
-file_to_find="../backend/.env.docker"
+ENV_FILE="../backend/.env.docker"
 
-# Check the current FRONTEND_URL in the .env file
-current_url=$(sed -n "4p" $file_to_find)
+echo "Updating backend environment for local development..."
+echo "Setting frontend URL to: $LOCAL_FRONTEND_URL"
 
-# Update the .env file if the IP address has changed
-if [[ "$current_url" != "FRONTEND_URL=\"http://${ipv4_address}:5173\"" ]]; then
-    if [ -f $file_to_find ]; then
-        sed -i -e "s|FRONTEND_URL.*|FRONTEND_URL=\"http://${ipv4_address}:5173\"|g" $file_to_find
-    else
-        echo "ERROR: File not found."
-    fi
+# Use sed to replace only the specific line, in case other variables are in the file
+if [ -f "$ENV_FILE" ]; then
+    sed -i -e "s|^FRONTEND_URL.*|$LOCAL_FRONTEND_URL|" "$ENV_FILE"
+    echo "Backend .env file updated successfully."
+else
+    echo "ERROR: Backend .env file not found at $ENV_FILE."
+    # Optionally, create it if it's missing
+    # echo "$LOCAL_FRONTEND_URL" > "$ENV_FILE"
 fi
