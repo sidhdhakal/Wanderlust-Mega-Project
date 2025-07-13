@@ -34,24 +34,19 @@ pipeline {
         }
         
         
-        stage("Update: Kubernetes manifests"){
-            steps{
-                script{
-                    dir('kubernetes'){
-                        sh """
-                            sed -i -e s/wanderlust-backend-beta.*/wanderlust-backend-beta:${params.BACKEND_DOCKER_TAG}/g backend.yaml
-                        """
-                    }
-                    
-                    dir('kubernetes'){
-                        sh """
-                            sed -i -e s/wanderlust-frontend-beta.*/wanderlust-frontend-beta:${params.FRONTEND_DOCKER_TAG}/g frontend.yaml
-                        """
-                    }
-                    
-                }
+        stage("Update: Kubernetes manifests") {
+    steps {
+        script {
+            dir('kubernetes') {
+                sh """
+                    sed -i -E 's|(siddhartha54/wanderlust-backend-beta:).*|\\1${params.BACKEND_DOCKER_TAG}|' backend.yaml
+                    sed -i -E 's|(siddhartha54/wanderlust-frontend-beta:).*|\\1${params.FRONTEND_DOCKER_TAG}|' frontend.yaml
+                """
             }
         }
+    }
+}
+
         
         stage("Git: Code update and push to GitHub"){
             steps{
